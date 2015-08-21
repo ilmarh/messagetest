@@ -1,13 +1,14 @@
 # -*- coding: utf8 -*-
 
-from app import db, bcrypt
+from app import db, bcrypt, app
 from flask import flash, abort, g
 import time
 import datetime as dt
-import sys
-from hashlib import md5
+import sys, os
 import zlib
+import hashlib 
 import re
+from config import DOWNLOAD_DIR, FILES_DIR
 
 
 ROLE_ADMIN = 2
@@ -86,12 +87,30 @@ class Message(db.Model):
         self.title = title
         self.message = message
         self.contacts = contacts
-        self.filename = filename
+        print 'Message recieved filename ' + filename
+        if filename :
+          '''
+          filename is stored in tmp folder
+          maybe after antivirus scan
+          need to move it to DB or another location
+          for now we will store it under files folder
+          with the name equal to file hash (sha-something)
+          '''
+          zfilename = os.path.join(DOWNLOAD_DIR, filename)
+          if os.path.isfile(zfilename) :
+            
+            newfilename = (hashlib.sha256(file(zfilename, 'rb').read()).hexdigest())
+            znewfilename = os.path.join(FILES_DIR, newfilename + '.zip')
+            if app.debug :
+              print 'sha hash: ' + newfilename
+              print 'hash len: ' + str(len(newfilename))
+              print 'new file: ' + znewfilename
+
+            os.rename(zfilename, znewfilename)
+            self.filename = newfilename
+        else :
+          self.filename = None
         '''
         if email : self.email = email
-        if password:
-            self.set_password(password)
-        else:
-            self.password = None
         '''
 

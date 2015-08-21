@@ -6,7 +6,8 @@ from flask.ext.login import LoginManager, login_user, logout_user, current_user,
 from .models import User, Message, ROLE_ADMIN, ROLE_USER #, Post
 from .forms import LoginForm, MessageForm, ReaderForm, UsersForm, NewUserForm
 from app import app, lm, db
-from config import MSG_PER_PAGE
+from config import MSG_PER_PAGE, DOWNLOAD_DIR, FILES_DIR
+from werkzeug import secure_filename
 
 main_links = [{'url':'/login', 'label':u'Вход'},{'url':'/message', 'label':u'Сообщение'}]
 
@@ -73,7 +74,23 @@ def post_message():
         if app.debug : print "message form validated"
         if app.debug : print "message submited"
         # Need to add here some hook to show Ticket number
-        m = Message(title=form.title.data, message=form.message.data, contacts=form.contacts, filename=None)
+        filename = None
+        if form.archive.data :
+          filename = secure_filename(form.archive.data.filename)
+          if app.debug :
+            print form.archive.data
+            print type(form.archive.data)
+            print filename
+          #filename = os.path.join(DOWNLOAD_DIR, secure_filename(form.archive.data.filename))
+          #zfilename = DOWNLOAD_DIR + '/' + filename
+          zfilename = os.path.join(DOWNLOAD_DIR, filename)
+          if app.debug :
+            print zfilename
+          if os.path.isfile(zfilename) :
+            os.remove(zfilename)
+          form.archive.data.save(zfilename)
+
+        m = Message(title=form.title.data, message=form.message.data, contacts=form.contacts, filename=filename)
         db.session.add(m)
         db.session.commit()
         app.logger.info('Message with ticket {0} commited\n'.format(m.ticket))
@@ -184,12 +201,15 @@ def download_file(name):
 
     if not g.user.is_anonymous() and not g.user.is_admin():
 
-      logstr = "User " + str(g.user) + " downloaded file " + name
+      logstr = "User " + str(g.user) + " downloading file " + name
       app.logger.info(logstr)
-      zfilename = os.path.join(app.config['DOWNLOAD_DIR'], '123456' + '.zip')
+      zfilename = os.path.join(FILES_DIR, name + '.zip')
       #zfilename = '/files/123456.zip'
       if app.debug : print 'Downloading file {0}'.format(zfilename)
-      return send_file(zfilename, as_attachment = True, attachment_filename = 'attach.zip')
+      if os.path.isfile(zfilename) :
+        return send_file(zfilename, as_attachment = True, attachment_filename = 'attach.zip')
+      else :
+        return redirect('/index')
       
       '''
     Здесь отдаётся доп-файл

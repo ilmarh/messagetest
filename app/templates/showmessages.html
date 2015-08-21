@@ -3,6 +3,7 @@
 
 {% block content %}
 
+<div class="row">
 <table class="table table-hover">
 <thead><tr><th>№</th><th>Дата</th><th>Заголовок</th><th>Файл</th><tr></thead>
     {% for msg in messages.items %}
@@ -44,5 +45,6 @@
         <li class="next disabled"><a href="#">След.сообщния</a></li>
         {% endif %}
     </ul>
+</div>
 
 {% endblock %}

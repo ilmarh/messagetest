@@ -3,8 +3,9 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 CSRF_ENABLED = True
 SECRET_KEY = '!njKhki@89y79%k;gh#KG&yufrpG:'
-LOGFILE = 'tmp/messages.log'
-DOWNLOAD_DIR = 'files'
+DOWNLOAD_DIR = os.path.join(basedir, 'tmp')
+LOGFILE = os.path.join(basedir, 'tmp/messages.log')
+FILES_DIR = os.path.join(basedir, 'files')
 
 if os.environ.get('DATABASE_URL') is None:
     SQLALCHEMY_DATABASE_URI = ('sqlite:///' + os.path.join(basedir, 'app.db') +
