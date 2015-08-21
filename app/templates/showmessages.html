@@ -1,0 +1,48 @@
+<!-- extend from base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+
+<table class="table table-hover">
+<thead><tr><th>№</th><th>Дата</th><th>Заголовок</th><th>Файл</th><tr></thead>
+    {% for msg in messages.items %}
+    <tr><td><a href="/message/{{msg.id}}">{{msg.id}}</a></td>
+        <td><a href="/message/{{msg.id}}">{{msg.ts.strftime("%Y-%m-%d %H-%M-%S UTC")}}</a></td>
+        <td><a href="/message/{{msg.id}}">{{msg.title}}</a></td>
+    {% if msg.filename %}
+        <td><a href="/message/{{msg.id}}">да</a></td><tr>
+    {% else %}
+        <td><a href="/message/{{msg.id}}">нет</a></td><tr>
+    {% endif %}
+    {% endfor %}
+    <ul class="pagination">
+        {% if messages.has_prev %}
+        <li class="previous"><a href="{{ url_for('show_messages', page=messages.prev_num) }}">Пред.сообщения</a></li>
+        {% else %}
+        <li class="previous disabled"><a href="#">Пред.сообщения</a></li>
+        {% endif %}
+        {% for page in messages.iter_pages() %}
+        {% if page %}
+          {% if page != messages.page %}
+            <li>
+            <a href="{{ url_for('show_messages', page=page) }}">{{ page }}</a>
+            </li>
+         {% else %}
+            <li class="active">
+            <a href="{{ url_for('show_messages', page=page) }}">{{ page }}</a>
+            </li>
+         {% endif %}
+       {% else %}
+            <li>
+              <span class=ellipsis>…</span>
+            </li>
+       {% endif %}
+       {% endfor %}
+        {% if messages.has_next %}
+        <li class="next"><a href="{{ url_for('show_messages', page=messages.next_num) }}">След.сообщния</a></li>
+        {% else %}
+        <li class="next disabled"><a href="#">След.сообщния</a></li>
+        {% endif %}
+    </ul>
+
+{% endblock %}
