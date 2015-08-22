@@ -3,6 +3,7 @@ from flask import Flask, g
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager
 from flask.ext.bcrypt import Bcrypt
+from flask.ext.mail import Mail
 from config import basedir, LOGFILE
 
 app = Flask(__name__)
@@ -18,6 +19,8 @@ lm.session_protection = "strong"
 db = SQLAlchemy(app)
 
 bcrypt = Bcrypt(app)
+
+mail = Mail(app)
 
 from app import models, views
 

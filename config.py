@@ -18,3 +18,15 @@ SQLALCHEMY_RECORD_QUERIES = True
 MSG_PER_PAGE = 10
 # Max filesize 16 megabytes
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+
+# email server
+MAIL_SERVER = 'your.mailserver.com'
+MAIL_PORT = 25
+MAIL_USE_TLS = False
+MAIL_USE_SSL = False
+MAIL_USERNAME = 'you'
+MAIL_PASSWORD = 'your-password'
+
+MAIL_SENDER = 'sender@example.com'
+# administrator list
+ADMINS = ['you@example.com']

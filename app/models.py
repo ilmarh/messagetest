@@ -87,8 +87,8 @@ class Message(db.Model):
         self.title = title
         self.message = message
         self.contacts = contacts
-        print 'Message recieved filename ' + filename
         if filename :
+          print 'Message recieved filename ' + filename
           '''
           filename is stored in tmp folder
           maybe after antivirus scan

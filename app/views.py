@@ -5,11 +5,11 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required, fresh_login_required
 from .models import User, Message, ROLE_ADMIN, ROLE_USER #, Post
 from .forms import LoginForm, MessageForm, ReaderForm, UsersForm, NewUserForm
-from app import app, lm, db
+from .emails import send_email
+from app import app, lm, db, mail
 from config import MSG_PER_PAGE, DOWNLOAD_DIR, FILES_DIR
 from werkzeug import secure_filename
 
-main_links = [{'url':'/login', 'label':u'Вход'},{'url':'/message', 'label':u'Сообщение'}]
 
 
 @app.before_request
@@ -93,6 +93,17 @@ def post_message():
         m = Message(title=form.title.data, message=form.message.data, contacts=form.contacts, filename=filename)
         db.session.add(m)
         db.session.commit()
+
+        # Send email to reader user
+        recipients = []
+        q = User.query.all()
+        for u in q :
+          if not u.is_admin() and u.email :
+            recipients.append(u.email)
+        if app.debug : print 'Recipients : ' + str(recipients)
+        send_email(subject=u'Новое сообщение горячей линии', recipients=recipients, 
+                   body=u'В ' + unicode(m.ts.strftime("%Y-%m-%d %H-%M-%S UTC")) + u' Получено новое сообщение на тему: ' + m.title)
+
         app.logger.info('Message with ticket {0} commited\n'.format(m.ticket))
         return render_template('ticket.html', title = u'Номер', ticket=m.ticket)
 
