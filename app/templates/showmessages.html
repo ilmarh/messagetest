@@ -4,8 +4,9 @@
 {% block content %}
 
 <div class="row">
-<table class="table table-hover">
-<thead><tr><th>№</th><th>Дата</th><th>Заголовок</th><th>Файл</th><tr></thead>
+  <div class="col-lg-12">
+  <table class="table table-hover">
+  <thead><tr><th>№</th><th>Дата</th><th>Заголовок</th><th>Файл</th><tr></thead>
     {% for msg in messages.items %}
     <tr><td><a href="/message/{{msg.id}}">{{msg.id}}</a></td>
         <td><a href="/message/{{msg.id}}">{{msg.ts.strftime("%Y-%m-%d %H-%M-%S UTC")}}</a></td>
@@ -16,6 +17,11 @@
         <td><a href="/message/{{msg.id}}">нет</a></td><tr>
     {% endif %}
     {% endfor %}
+    </table>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12">
     <ul class="pagination">
         {% if messages.has_prev %}
         <li class="previous"><a href="{{ url_for('show_messages', page=messages.prev_num) }}">Пред.сообщения</a></li>
@@ -40,11 +46,12 @@
        {% endif %}
        {% endfor %}
         {% if messages.has_next %}
-        <li class="next"><a href="{{ url_for('show_messages', page=messages.next_num) }}">След.сообщния</a></li>
+        <li class="next"><a href="{{ url_for('show_messages', page=messages.next_num) }}">След.сообщения</a></li>
         {% else %}
-        <li class="next disabled"><a href="#">След.сообщния</a></li>
+        <li class="next disabled"><a href="#">След.сообщения</a></li>
         {% endif %}
     </ul>
+  </div>
 </div>
 
 {% endblock %}

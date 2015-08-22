@@ -4,6 +4,6 @@ app.db
 search.db
 flask
 *.mo
-tmp
-files
+*.log
+*.zip
 db_repository
