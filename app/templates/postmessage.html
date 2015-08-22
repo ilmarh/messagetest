@@ -4,13 +4,15 @@
 {% block content %}
 
 <div class="row">
-<p>Кратко сформулируйте тему вашего обращения, которую необходимо указать в заголовке. Само обращение можно разместить в поле &quot;Сообщение&quot;, если его длина не превышает
-2200 символов. Так же вы можете сопроводить своё обращение дополнительными материалами, записанными в zip-архив. Не забудьте представиться и заполнить поля &quot;Email&quot; и/или
-&quot;Телефон&quot;, чтобы ответственный сотрудник мог связаться с вами для уточнения деталей. 
-</p>
-<p>Обратите внимание, что после нажатия на кнопку &quot;Отправить&quot;, вы перейдёте на страницу с отображением номера вашего сообщения. Пожалуйста, запомните или запишите этот номер,
-т.к. с помощью него вы сможете идентифицировать обратившегося к вам сотрудника.
-</p>
+  <div class="col-lg-12">
+    <p>Кратко сформулируйте тему вашего обращения, которую необходимо указать в заголовке. Само обращение можно разместить в поле &quot;Сообщение&quot;, если его длина не превышает
+       2200 символов. Так же вы можете сопроводить своё обращение дополнительными материалами, записанными в zip-архив. Не забудьте представиться и заполнить поля &quot;Email&quot; и/или
+       &quot;Телефон&quot;, чтобы ответственный сотрудник мог связаться с вами для уточнения деталей. 
+    </p>
+    <p>Обратите внимание, что после нажатия на кнопку &quot;Отправить&quot;, вы перейдёте на страницу с отображением номера вашего сообщения. Пожалуйста, запомните или запишите этот номер,
+       т.к. с помощью него вы сможете идентифицировать обратившегося к вам сотрудника.
+    </p>
+  </div>
 </div>
 
 <div class="row">
@@ -24,18 +26,21 @@
       <label class="control-label col-lg-2" for="telephone">Телефон:</label>
       <div class="col-lg-10"> {{form.telephone(maxlength=20, type="tel", class="form-control", placeholder="Укажите номер телефона цифрами")}} </div>
       <label class="control-label col-lg-2" for="message">Сообщение:</label>
-      <div class="col-lg-12"> {{form.message(maxlength=2200, rows=10, class="form-control", placeholder="Введите сообщение длинной не более 2200 символов")}} </div>
+      <div class="col-lg-10"> {{form.message(maxlength=2200, rows=10, class="form-control", placeholder="Введите сообщение длинной не более 2200 символов")}} </div>
       <label class="control-label col-lg-2" for="archive">Файл:</label>
-      <div class="col-lg-2"> {{form.archive(class="form-control")}} </div>
-    </div>
-    <div class="col-lg-offset-2 col-lg-10">
-      <div class="btn-group">
+      <div class="col-lg-10">
+        <input class="form-control" id="archive" name="archive" title="Загрузить zip-архив" type="file" data-filename-placement="inside">
+        <!-- {{form.archive(class="form-control", title="Загрузить zip-архив")}} -->
+      </div>
+      <div class="col-lg-offset-2 col-lg-3">
         {{form.send_button(class="btn btn-lg btn-primary form-control")}}
       </div>
     </div>
   </form>
 </div>
 
+<script src="/static/js/bootstrap.file-input.min.js"></script>
+<script>$(document).ready(function(){$('input[type=file]').bootstrapFileInput();});</script>
 {% endblock %}
 
 <!--
