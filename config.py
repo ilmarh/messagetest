@@ -16,3 +16,5 @@ SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 SQLALCHEMY_RECORD_QUERIES = True
 
 MSG_PER_PAGE = 10
+# Max filesize 16 megabytes
+MAX_CONTENT_LENGTH = 16 * 1024 * 1024
