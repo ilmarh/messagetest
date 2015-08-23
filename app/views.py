@@ -25,8 +25,7 @@ def index():
   if g.user is not None and g.user.is_authenticated():
     return redirect(url_for('logout'))
 
-  links = main_links
-  return render_template("index.html", title = u'Внимание!', links=links)
+  return render_template("index.html", title = u'Внимание!')
 
 
 @app.route('/login', methods = ['GET', 'POST'])
