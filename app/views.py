@@ -4,7 +4,7 @@ import os, zlib
 from flask import render_template, flash, redirect, session, url_for, request, g, jsonify, abort, send_file
 from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required, fresh_login_required
 from .models import User, Message, ROLE_ADMIN, ROLE_USER #, Post
-from .forms import LoginForm, MessageForm, ReaderForm, UsersForm, NewUserForm
+from .forms import LoginForm, MessageForm, ReaderForm, UsersForm, NewUserForm, EditUserForm
 from .emails import send_email
 from app import app, lm, db, mail
 from config import MSG_PER_PAGE, DOWNLOAD_DIR, FILES_DIR
@@ -237,28 +237,22 @@ def download_file(name):
 
 def users():
     if g.user.is_admin():
-      form = UsersForm()
-      users = []
 
-      q = User.query.all()
-      for u in q :
-        user = {"username":u.username,"first":u.first_name,"last":u.last_name,"email":u.email,"role":u.get_role()}
-        users.append(user)
-      form.users = users
+      form = UsersForm()
+      form.users = User.query.all()
 
       if form.validate_on_submit() :
         user_ids = request.form.getlist("users_action")
         recs = []
-	for rec in form.users :
-			recs.append(rec['username'])
+	for u in form.users : recs.append(u.username)
         for user_id in user_ids :
-			if not user_id in recs :
-                          if app.debug :
-			    print user_ids
-			    print recs
-			    flash(u"В запросе POST указаны неверные данные о пользователях")
-			  app.logger.error("Wrong users in POST request")
-			  return redirect('/admin/users')
+	  if not user_id in recs :
+            if app.debug :
+	      print user_ids
+	      print recs
+	      flash(u"В запросе POST указаны неверные данные о пользователях")
+	    app.logger.error("Wrong users in POST request")
+	    return redirect('/admin/users')
         if form.add_button.data :
                   if app.debug :
 		    print "do add"
@@ -285,7 +279,7 @@ def users():
             return redirect('/admin/users')
           if len(user_ids) == 0 :
             flash(u'Выберите только одного пользователя для редактирования!')
-            return redirect('/admin/users/edit/{0}'.format(user_ids[0]))
+          return redirect('/admin/users/edit/{0}'.format(user_ids[0]))
 
       return render_template("admin/users.html", title = u'Управление пользователями', form=form)
                                 
@@ -303,6 +297,9 @@ def add_user():
         form.role.choices = [('admin', u'Администратор'),('user', u'Пользователь')]
 
         if form.validate_on_submit() :
+                if form.cancel_button.data :
+                  if app.debug : print "cancel user add"
+                  return redirect('/admin/users')
                 if form.apply_button.data :
                         '''
                         Need to check input strings userid, email, first, last names!
@@ -325,31 +322,97 @@ def add_user():
 			if form.first_name.data : user.first_name = form.first_name.data
 			if form.last_name.data : user.last_name = form.last_name.data
                         '''
-			user = User(username=form.userid.data, password=form.password.data, email=form.email.data, role=role)
+			user = User(username=form.userid.data, password=form.password.data, email=form.email.data, role=role, first_name=form.first.data, last_name=form.last.data)
 			db.session.add(user)
 			db.session.commit()
-			logstr = str(g.user) + " added user " + str(user) + "\n"
+			logstr = unicode(g.user) + u" added user " + unicode(user) + u"\n"
 			app.logger.info(logstr)
-                if form.cancel_button.data :
-                        if app.debug : print "cancel user add"
                 return redirect('/admin/users')
 	elif request.method != "POST":
+                print request.method
 		app.logger.info('Add user: wrong method ({0}) used\n'.format(request.method))
 		form.role.data = ROLE_USER
-	else :
-		if app.debug:
-                  print 'Form data: userid {0}, role {1}'.format(form.userid.data, role=form.role.data)
-                  print form.errors
-		app.logger.debug(form.errors)
-		flash('form was not validated', 'error')
-                return redirect('/admin/users')
+        else : # request.method == 'POST' :
+          if form.cancel_button.data :
+            if app.debug : print "cancel user add"
+            return redirect('/admin/users')
+          if app.debug :
+            print "message form not validated"
+            print form.errors
+            for field in form.errors :
+              err = form.errors[field]
+              for errmsg in err :
+                flash(errmsg, 'error')
+
 
         return render_template("admin/useradd.html", title = u'Новый пользователь', form=form)
 
-    app.logger.info('User {0} is not admin, tried to access admin page /admin/users/add\n'.format(g.user))
+    app.logger.info(u'User ' + g.user + u' is not admin, tried to access admin page /admin/users/add\n')
     flash('Not admin role' , 'error')
     return redirect('/')
 
+
+'''
+Административная ссылка, чтобы редактировать пользователей админом!
+'''
+@app.route('/admin/users/edit/<userid>', methods = ['GET', 'POST'])
+@fresh_login_required
+def edit_user(userid):
+
+    if g.user.is_admin():
+      u = User.query.filter_by(username=userid).first()
+      if not u :
+        if app.debug : print "Edit user: userid not found"
+        return redirect('/admin/users')
+
+      form = EditUserForm()
+      form.role.choices = [('admin', u'Администратор'),('user', u'Пользователь')]
+
+      if form.validate_on_submit() :
+        if form.cancel_button.data :
+          if app.debug : print "cancel user add"
+          return redirect('/admin/users')
+        if form.apply_button.data :
+          if form.password.data:
+            u.set_password(form.password.data)
+          if form.email.data :
+            u.email = form.email.data
+	  if form.role.data == 'admin' : u.role = ROLE_ADMIN
+	  elif form.role.data == 'user' : u.role = ROLE_USER
+	  else :
+            # XXX: изменить сообщение
+            app.logger.info(u'User {0} tried to add user {1} with wrong role {2}\n'.format(g.user, form.userid.data, form.role.data))
+	    flash('wrong role!')
+            return redirect('/admin/users/edit/' + userid)
+
+	  db.session.add(u)
+	  db.session.commit()
+          print "changed user"
+          # XXX: log message
+
+          return redirect('/admin/users')
+
+      elif request.method != "POST":
+        form.email.data = u.email
+        if u.is_admin() : form.role.data = 'admin'
+        else : form.role.data = 'user'
+      else : # request.method == 'POST' :
+        if form.cancel_button.data :
+          if app.debug : print "cancel user edit"
+          return redirect('/admin/users')
+        if app.debug :
+          print "message form not validated"
+          print form.errors
+          for field in form.errors :
+            err = form.errors[field]
+            for errmsg in err :
+              flash(errmsg, 'error')
+
+      return render_template("admin/useredit.html", title = u'Изменение пользователя', form=form)
+
+    app.logger.info(u'User ' + g.user + u' is not admin, tried to access admin page /admin/users/add\n')
+    flash('Not admin role' , 'error')
+    return redirect('/')
 
 
 #

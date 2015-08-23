@@ -8,23 +8,21 @@
 
         {{form.hidden_tag()}}
         <table class="table table-hover">
-	  <tr>
-		<td> </td><td>Имя</td><td>email</td><td>role</td>
-	  </tr>
+	  <thead><tr><td> </td><td>Имя</td><td>Email</td><td>Роль</td></tr></thead>
           {% for user in form.users %}
           <tr>
             <td><input type="checkbox" name="users_action" value="{{ user.username }}"></td>
-            <td>{{user.username}}</td>
+            <td>{{user.username}} ({{user.first_name}} {{user.last_name}})</td>
             <td>{{user.email}}</td>
-            <td>{{user.role}}</td>
+            <td>{{user.get_role()}}</td>
           </tr>
          {% endfor %}
         </table>
       </div>
-      <div class="col-xs-4">
-          <p>{{form.add_button(class="btn btn-lg btn-primary")}}</p>
-          <p>{{form.delete_button(class="btn btn-lg btn-primary")}}</p>
-          <p>{{form.edit_button(class="btn btn-lg btn-primary")}}</p>
+      <div class="col-md-4">
+          <p>{{form.add_button(class="btn btn-md btn-primary")}}</p>
+          <p>{{form.delete_button(class="btn btn-md btn-primary")}}</p>
+          <p>{{form.edit_button(class="btn btn-md btn-primary")}}</p>
       </div>
 
     </form>

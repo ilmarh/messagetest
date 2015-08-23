@@ -5,25 +5,24 @@ from flask import flash, abort, g
 import time
 import datetime as dt
 import sys, os
-import zlib
-import hashlib 
-import re
-from config import DOWNLOAD_DIR, FILES_DIR
+import zlib, hashlib 
+import config
 
 
 ROLE_ADMIN = 2
 ROLE_USER = 1
 
 
+
 class User(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key = True)
     ts = db.Column(db.DateTime, nullable=False)
-    username = db.Column(db.String(80), index = True, unique=True, nullable=False)
-    email = db.Column(db.String(120), nullable=False)
-    first_name = db.Column(db.String(30), nullable=True)
-    last_name = db.Column(db.String(50), nullable=True)
-    password = db.Column(db.String(128), nullable=True)
+    username = db.Column(db.String(config.MODEL_USERNAME), index = True, unique=True, nullable=False)
+    email = db.Column(db.String(config.MODEL_EMAIL), nullable=False)
+    first_name = db.Column(db.Unicode(config.MODEL_FIRSTNAME), nullable=True)
+    last_name = db.Column(db.Unicode(config.MODEL_LASTNAME), nullable=True)
+    password = db.Column(db.String(config.MODEL_PASSHASH), nullable=True)
     role = db.Column(db.SmallInteger, default = ROLE_USER)
 
     def __init__(self, username, email, password=None, **kwargs):
@@ -51,9 +50,9 @@ class User(db.Model):
         return unicode(self.id)
 
     def get_role(self):
-        role = 'unknown'
-        if self.role == ROLE_ADMIN : role = 'admin'
-        if self.role == ROLE_USER : role = 'user'
+        role = u'неизвестно'
+        if self.role == ROLE_ADMIN : role = u'администратор'
+        if self.role == ROLE_USER : role = u'пользователь'
         return role
 
     def set_password(self, password):
@@ -64,21 +63,23 @@ class User(db.Model):
 
     @property
     def full_name(self):
-        return "{0} {1}".format(self.first_name, self.last_name)
+        return u"{0} {1}".format(self.first_name, self.last_name)
 
     def __repr__(self):
-        return '<User {0} ({1} {2}), email {3}, role {4} ({5}) created on {6}>'.format(self.username, self.first_name, self.last_name, self.email, self.role, self.get_role(), self.ts)
+        r =    u'<User ' + self.username + u' (' + self.first_name + u' ' + self.last_name + u'), email ' + self.email + u', role ' + unicode(self.role) + u'(' + self.get_role() + u') created on ' + unicode (self.ts) + u'>'
+        return r.encode('utf-8')
+#.format(self.username, self.first_name.decode('utf-8'), self.last_name.decode('utf-8'), self.email, self.role, self.get_role().decode('utf-8'), self.ts)
 
 
 class Message(db.Model):
     __tablename__ = "messages"
     id = db.Column(db.Integer, primary_key = True)
     ts = db.Column(db.DateTime, nullable=False)
-    ticket = db.Column(db.String(10))
-    title = db.Column(db.String(140))
-    message = db.Column(db.String(4500))
-    contacts = db.Column(db.String(150))
-    filename = db.Column(db.String(128)) # 'none', if no file
+    ticket = db.Column(db.String(config.MODEL_TICKET))
+    title = db.Column(db.Unicode(config.MODEL_TITLE))
+    message = db.Column(db.Unicode(config.MODEL_MESSAGE))
+    contacts = db.Column(db.Unicode(config.MODEL_CONTACTS))
+    filename = db.Column(db.String(config.MODEL_FILENAME)) # 'none', if no file
     
     def __init__(self, title, message, contacts, filename=None, **kwargs):
         db.Model.__init__(self, **kwargs)
@@ -96,7 +97,7 @@ class Message(db.Model):
           for now we will store it under files folder
           with the name equal to file hash (sha-something)
           '''
-          zfilename = os.path.join(DOWNLOAD_DIR, filename)
+          zfilename = os.path.join(config.DOWNLOAD_DIR, filename)
           if os.path.isfile(zfilename) :
             
             newfilename = (hashlib.sha256(file(zfilename, 'rb').read()).hexdigest())

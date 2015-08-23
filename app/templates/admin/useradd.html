@@ -1,33 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="container">
-<form action="" method="post" name="useradd" class="form-horizontal" role="form">
+<div class="row">
+  <form action="" method="post" name="useradd" class="form-horizontal" role="form">
     {{form.hidden_tag()}}
-    <div class=form-group">
-      <label class="control-label col-lg-2" for="userid">Имя:</label>
-      <div class="col-lg-10"> {{form.userid(size=15, class="form-control")}} </div>
+    <label class="control-label col-lg-2" for="userid">Идентификатор:</label>
+    <div class="col-lg-10"> {{form.userid(class="form-control")}} </div>
+    <label class="control-label col-lg-2" for="first">Имя:</label>
+    <div class="col-lg-10"> {{form.first(class="form-control")}} </div>
+    <label class="control-label col-lg-2" for="last">Фамилия:</label>
+    <div class="col-lg-10"> {{form.last(class="form-control")}} </div>
+    <label class="control-label col-lg-2" for="password">Пароль:</label>
+    <div class="col-lg-10"> {{form.password(class="form-control")}} </div>
+    <label class="control-label col-lg-2" for="email">Почта:</label>
+    <div class="col-lg-10"> {{form.email(class="form-control")}} </div>
+    <label class="control-label col-lg-2" for="role">Роль:</label>
+    <div class="col-lg-10"> {{form.role(class="form-control")}} </div>
+    <div class="col-lg-offset-2 col-lg-4">
+      {{form.apply_button(class="btn btn-lg btn-primary form-control")}}
+      {{form.cancel_button(class="btn btn-lg btn-primary form-control")}}
     </div>
-    <div class=form-group">
-      <label class="control-label col-lg-2" for="password">Пароль:</label>
-      <div class="col-lg-10"> {{form.password(size=20, class="form-control")}} </div>
-    </div>
-    <div class=form-group">
-      <label class="control-label col-lg-2" for="email">Почта:</label>
-      <div class="col-lg-10"> {{form.email(size=80, class="form-control")}} </div>
-    </div>
-    <div class=form-group">
-      <label class="control-label col-lg-2" for="role">Роль:</label>
-      <div class="col-lg-10"> {{form.role(class="form-control")}} </div>
-    </div>
-    <div class=button-group">
-      <div class="col-lg-offset-2 col-lg-4">
-        {{form.apply_button(class="btn btn-lg btn-primary")}}
-        {{form.cancel_button(class="btn btn-lg btn-primary")}}
-      </div>
-    </div>
-
-</form>
-</div></div>
+  </form>
+</div>
 {% endblock %}
 

@@ -3,15 +3,21 @@
 from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField, TextAreaField, SubmitField, SelectField
 from flask.ext.wtf.file import FileField, FileAllowed, FileRequired
-from wtforms.validators import DataRequired, Optional, Email, Length
+from wtforms.validators import DataRequired, Optional, Email, Length, EqualTo
 
 from .models import User
+import config
+
 
 class LoginForm(Form):
-    username = StringField('username', validators = [DataRequired(u'Не введено имя пользователя'),
-                                                     Length(max=15, message=u'Имя пользователя должно быть не более 15 символов')])
-    password = PasswordField('password', validators = [DataRequired(u'Не введён пароль'),
-                                                       Length(max=20, message=u'Пароль должен быть не более 20 символов')])
+    username = StringField('username', 
+                           validators = [DataRequired(u'Не введено имя пользователя'),
+                                         Length(max=config.MODEL_USERNAME,
+                                                message=u'Имя пользователя должно быть не более {0} символов'.format(config.MODEL_USERNAME))])
+    password = PasswordField('password',
+                             validators = [DataRequired(u'Не введён пароль'),
+                                           Length(max=config.MODEL_PASSWORD, min=8,
+                                                  message=u'Пароль должен быть длиной от 8 до {0} символов'.format(config.MODEL_PASSWORD))])
 
     def __init__(self, *args, **kwargs):
         super(LoginForm, self).__init__(*args, **kwargs)
@@ -39,17 +45,24 @@ class LoginForm(Form):
 
 
 class MessageForm(Form):
-    title = StringField('title', validators = [DataRequired(u'Необходимо заполнить заголовок'),
-                                               Length(max=70, message=u'Заголовок должен быть не более 70 символов')])
-    message = TextAreaField('message', validators = [DataRequired(u'Необходимо заполнить тело сообщения'),
-                                                     Length(max=2200, message=u'Тело сообщения должно быть не более 2200 символов')])
-    email = StringField('email', validators = [Email(u'Неправильно введён Email'),
-                                               Optional(),
-                                               Length(max=100, message=u'Email должен быть не более 100 символов')]) #inputtext (email, telephone, etc)
-    telephone = StringField('telephone', validators = [Optional(),
-                                                       Length(max=20, message=u'Телефонный номер должен быть не более 20 символов')]) #inputtext (email, telephone, etc)
-    archive = FileField('archive', validators=[Optional(),
-                                               FileAllowed(['zip'], u'Файл должен быть zip-архивом!')])
+    title = StringField('title',
+                        validators = [DataRequired(u'Необходимо заполнить заголовок'),
+                                      Length(max=config.MODEL_TITLE,min=10,
+                                             message=u'Заголовок должен быть от 10 до {0} символов'.format(config.MODEL_TITLE))])
+    message = TextAreaField('message',
+                            validators = [DataRequired(u'Необходимо заполнить тело сообщения'),
+                                          Length(max=config.MODEL_MESSAGE,min=10,
+                                          message=u'Тело сообщения должно быть от 10 до {0} символов'.format(config.MODEL_MESSAGE))])
+    email = StringField('email',
+                        validators = [Email(u'Неправильно введён Email'),
+                                      Optional(),
+                                      Length(max=config.MODEL_EMAIL,
+                                             message=u'Email должен быть не более {0} символов'.format(config.MODEL_EMAIL))]) #inputtext (email, telephone, etc)
+    telephone = StringField('telephone',
+                            validators = [Optional(),
+                                          Length(max=config.MODEL_TELEPHONE,
+                                                 message=u'Телефонный номер должен быть не более {0} символов'.format(config.MODEL_TELEPHONE))]) #inputtext (email, telephone, etc)
+    archive = FileField('archive', validators=[Optional(), FileAllowed(['zip'], u'Файл должен быть zip-архивом!')])
     send_button = SubmitField(u'Отправить')
 
     def __init__(self, *args, **kwargs):
@@ -110,22 +123,46 @@ class UsersForm(Form):
 
 class UserForm(Form):
 
-        passwordold = PasswordField(u'Старый пароль', validators=[DataRequired()])
-        password1 = PasswordField(u'Новый пароль', validators=[Optional()])
-        password2 = PasswordField(u'Повтор пароля', validators=[Optional()])
-        email = StringField(u'email', validators=[Optional()])
-        apply_button = SubmitField(u'Apply')
+        passwordold = PasswordField('password',
+                                    validators=[DataRequired(),
+                                                Length(max=config.MODEL_PASSWORD, min=8,
+                                                       message=u'Пароль должен быть длиной от 8 до {0} символов'.format(config.MODEL_PASSWORD))])
+        password1 = PasswordField('newpassword',
+                                  validators=[Optional(),
+                                              Length(max=config.MODEL_PASSWORD, min=8,
+                                                     message=u'Пароль должен быть длиной от 8 до {0} символов'.format(config.MODEL_PASSWORD)),
+                                              EqualTo('password2')])
+        password2 = PasswordField('confirmpassword', validators=[Optional()])
+        email = StringField('email',
+                            validators = [Email(u'Неправильно введён Email'),
+                                          Optional(),
+                                          Length(max=config.MODEL_EMAIL,
+                                                 message=u'Email должен быть не более {0} символов'.format(config.MODEL_EMAIL))])
+        apply_button = SubmitField(u'Сохранить')
+        cancel_button = SubmitField(u'Отменить')
 
 class EditUserForm(Form) :
 
-        password = StringField('password', validators=[Optional()])
-        email = StringField('email', validators=[Optional()])
+        password = PasswordField('password',
+                                 validators=[DataRequired(),
+                                             Length(max=config.MODEL_PASSWORD, min=8,
+                                                    message=u'Пароль должен быть длиной от 8 до {0} символов'.format(config.MODEL_PASSWORD))])
+        email = StringField('email',
+                            validators = [Email(u'Неправильно введён Email'),
+                                          Optional(),
+                                          Length(max=config.MODEL_EMAIL,
+                                                 message=u'Email должен быть не более {0} символов'.format(config.MODEL_EMAIL))])
         role = SelectField('role', validators = [DataRequired()])
-        apply_button = SubmitField('apply')
-        cancel_button = SubmitField('cancel')
+        apply_button = SubmitField(u'Сохранить')
+        cancel_button = SubmitField(u'Отменить')
 
 class NewUserForm(EditUserForm):
 
-        userid = StringField(u'userid', validators=[DataRequired()])
+        userid = StringField('userid', 
+                             validators = [DataRequired(u'Не введено имя пользователя'),
+                                         Length(max=config.MODEL_USERNAME,
+                                                message=u'Имя пользователя должно быть не более {0} символов'.format(config.MODEL_USERNAME))])
+        first = StringField('first', validators=[DataRequired()])
+        last = StringField('last', validators=[DataRequired()])
 
 
