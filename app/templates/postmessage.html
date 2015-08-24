@@ -18,19 +18,23 @@
 <div class="row">
   <form action="" method="post" name="message" role="form" class="form-horizontal" enctype=multipart/form-data>
     {{form.hidden_tag()}}
-      <label class="control-label col-lg-2" for="title">Заголовок:</label>
-      <div class="col-lg-9"> {{form.title(autofocus=true, maxlength=140, class="form-control", placeholder="Введите заголовок сообщения")}} </div>
-      <label class="control-label col-lg-2" for="email">Email:</label>
-      <div class="col-lg-9"> {{form.email(maxlength=100, type="email", class="form-control", placeholder="Укажите адрес электронной почты")}} </div>
-      <label class="control-label col-lg-2" for="telephone">Телефон:</label>
-      <div class="col-lg-9"> {{form.telephone(maxlength=20, type="tel", class="form-control", placeholder="Укажите номер телефона цифрами")}} </div>
-      <label class="control-label col-lg-2" for="message">Сообщение:</label>
-      <div class="col-lg-9"> {{form.message(maxlength=2200, rows=10, class="form-control", placeholder="Введите сообщение длинной не более 2200 символов")}} </div>
-      <label class="control-label col-lg-2" for="archive">Файл:</label>
+    {{form.title.label(class="control-label col-lg-2")}}
+      <div class="col-lg-9"> {{form.title(autofocus=true, class="form-control", placeholder="Введите заголовок сообщения")}} </div>
+    {{form.email.label(class="control-label col-lg-2")}}
+      <div class="col-lg-9"> {{form.email(type="email", class="form-control", placeholder="Укажите адрес электронной почты")}} </div>
+    {{form.telephone.label(class="control-label col-lg-2")}}
+      <div class="col-lg-9"> {{form.telephone(type="tel", class="form-control", placeholder="Укажите номер телефона цифрами")}} </div>
+    {{form.message.label(class="control-label col-lg-2")}}
+      <div class="col-lg-9"> {{form.message(rows=10, class="form-control", placeholder="Введите сообщение")}} </div>
+    {{form.archive.label(class="control-label col-lg-2")}}
       <div class="col-lg-9">
         <input class="form-control" id="archive" name="archive" title="Загрузить zip-архив" type="file" data-filename-placement="inside">
-        <!-- {{form.archive(class="form-control", title="Загрузить zip-архив")}} -->
       </div>
+    {{form.recaptcha.label(class="control-label col-lg-2")}}
+<!--
+      <label class="control-label col-lg-2" for="recaptcha">Captcha:</label>
+-->
+      <div class="col-lg-9"> {{form.recaptcha(class="form-control")}} </div>
       <div class="col-lg-offset-2 col-lg-2">
         {{form.send_button(class="btn btn-lg btn-primary form-control")}}
       </div>

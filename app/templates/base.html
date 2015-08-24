@@ -28,9 +28,16 @@
           </div>
           <div id="navbar" class="navbar-collapse collapse">
 {% if g.user and g.user.is_authenticated() %}
+  {% if g.user.is_admin() %}
             <ul class="nav navbar-nav navbar-right">
-              <li><a href="/logout">Logout ({{g.user.username}})</a></li>
+              <li><a href="/logout">Выход ({{g.user.username}})</a></li>
             </ul>
+  {% else %}
+            <ul class="nav navbar-nav navbar-right">
+              <li><a href="/profile">Профиль</a></li>
+              <li><a href="/logout">Выход ({{g.user.username}})</a></li>
+            </ul>
+  {% endif %}
 {% else %}
             <ul class="nav navbar-nav">
               <li><a href="/message">Сообщение</a></li>
