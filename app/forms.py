@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 
-from flask.ext.wtf import Form
+from flask.ext.wtf import Form#, RecaptureField
+from flask_wtf.recaptcha import RecaptchaField
 from wtforms import StringField, PasswordField, TextAreaField, SubmitField, SelectField
 from flask.ext.wtf.file import FileField, FileAllowed, FileRequired
 from wtforms.validators import DataRequired, Optional, Email, Length, EqualTo
@@ -10,11 +11,11 @@ import config
 
 
 class LoginForm(Form):
-    username = StringField('username', 
+    username = StringField(u'Идентификатор:', 
                            validators = [DataRequired(u'Не введено имя пользователя'),
                                          Length(max=config.MODEL_USERNAME,
                                                 message=u'Имя пользователя должно быть не более {0} символов'.format(config.MODEL_USERNAME))])
-    password = PasswordField('password',
+    password = PasswordField(u'Пароль:',
                              validators = [DataRequired(u'Не введён пароль'),
                                            Length(max=config.MODEL_PASSWORD, min=8,
                                                   message=u'Пароль должен быть длиной от 8 до {0} символов'.format(config.MODEL_PASSWORD))])
@@ -45,24 +46,25 @@ class LoginForm(Form):
 
 
 class MessageForm(Form):
-    title = StringField('title',
+    title = StringField(u'Заголовок:',
                         validators = [DataRequired(u'Необходимо заполнить заголовок'),
                                       Length(max=config.MODEL_TITLE,min=10,
                                              message=u'Заголовок должен быть от 10 до {0} символов'.format(config.MODEL_TITLE))])
-    message = TextAreaField('message',
+    message = TextAreaField(u'Сообщение:',
                             validators = [DataRequired(u'Необходимо заполнить тело сообщения'),
                                           Length(max=config.MODEL_MESSAGE,min=10,
                                           message=u'Тело сообщения должно быть от 10 до {0} символов'.format(config.MODEL_MESSAGE))])
-    email = StringField('email',
+    email = StringField(u'Почта:',
                         validators = [Email(u'Неправильно введён Email'),
                                       Optional(),
                                       Length(max=config.MODEL_EMAIL,
                                              message=u'Email должен быть не более {0} символов'.format(config.MODEL_EMAIL))]) #inputtext (email, telephone, etc)
-    telephone = StringField('telephone',
+    telephone = StringField(u'Телефон:',
                             validators = [Optional(),
                                           Length(max=config.MODEL_TELEPHONE,
                                                  message=u'Телефонный номер должен быть не более {0} символов'.format(config.MODEL_TELEPHONE))]) #inputtext (email, telephone, etc)
-    archive = FileField('archive', validators=[Optional(), FileAllowed(['zip'], u'Файл должен быть zip-архивом!')])
+    archive = FileField(u'Файл:', validators=[Optional(), FileAllowed(['zip'], u'Файл должен быть zip-архивом!')])
+    recaptcha = RecaptchaField()
     send_button = SubmitField(u'Отправить')
 
     def __init__(self, *args, **kwargs):
@@ -121,48 +123,100 @@ class UsersForm(Form):
         delete_button = SubmitField(u'Удалить')
         edit_button = SubmitField(u'Изменить')
 
-class UserForm(Form):
+class ProfileForm(Form):
 
-        passwordold = PasswordField('password',
-                                    validators=[DataRequired(),
-                                                Length(max=config.MODEL_PASSWORD, min=8,
-                                                       message=u'Пароль должен быть длиной от 8 до {0} символов'.format(config.MODEL_PASSWORD))])
-        password1 = PasswordField('newpassword',
-                                  validators=[Optional(),
-                                              Length(max=config.MODEL_PASSWORD, min=8,
-                                                     message=u'Пароль должен быть длиной от 8 до {0} символов'.format(config.MODEL_PASSWORD)),
-                                              EqualTo('password2')])
-        password2 = PasswordField('confirmpassword', validators=[Optional()])
-        email = StringField('email',
-                            validators = [Email(u'Неправильно введён Email'),
-                                          Optional(),
-                                          Length(max=config.MODEL_EMAIL,
-                                                 message=u'Email должен быть не более {0} символов'.format(config.MODEL_EMAIL))])
-        apply_button = SubmitField(u'Сохранить')
-        cancel_button = SubmitField(u'Отменить')
+    passwordold = PasswordField(u'Старый пароль:',
+                                validators=[DataRequired(u'Для сохранения изменений необходимо указать текущий пароль'),
+                                            Length(max=config.MODEL_PASSWORD, min=8,
+                                                   message=u'Пароль должен быть длиной от 8 до {0} символов'.format(config.MODEL_PASSWORD))])
+    password1 = PasswordField(u'Новый пароль:',
+                              validators=[Optional(),
+                                          Length(max=config.MODEL_PASSWORD, min=8,
+                                                 message=u'Пароль должен быть длиной от 8 до {0} символов'.format(config.MODEL_PASSWORD)),
+                                          EqualTo('password2', u'Новые пароли не совпадают')])
+    password2 = PasswordField(u'Повтор пароля:', validators=[Optional()])
+    email = StringField(u'Почта:',
+                        validators = [Email(u'Неправильно введён Email'),
+                                      Optional(),
+                                      Length(max=config.MODEL_EMAIL,
+                                             message=u'Email должен быть не более {0} символов'.format(config.MODEL_EMAIL))])
+    apply_button = SubmitField(u'Сохранить')
+    cancel_button = SubmitField(u'Отменить')
+
+    def __init__(self, user, *args, **kwargs):
+        super(ProfileForm, self).__init__(*args, **kwargs)
+        self.user = user
+
+    def validate(self):
+        initial_validation = super(ProfileForm, self).validate()
+        if not initial_validation:
+            print "ProfileForm: initial_validation failed"
+            return False
+
+        if not self.user.check_password(self.passwordold.data):
+            print "ProfileForm: invalid password"
+            self.passwordold.errors.append(u'Неверный пароль')
+            return False
+
+        if self.password1.data and not self.user.password_is_strong(self.password1.data) :
+            print "ProfileForm: weak password"
+            self.password1.errors.append(u'Слабый пароль')
+            return False
+
+        print "ProfileForm: validation Ok"
+        return True
 
 class EditUserForm(Form) :
 
-        password = PasswordField('password',
-                                 validators=[DataRequired(),
+        password = PasswordField(u'Пароль:',
+                                 validators=[Optional(),
                                              Length(max=config.MODEL_PASSWORD, min=8,
                                                     message=u'Пароль должен быть длиной от 8 до {0} символов'.format(config.MODEL_PASSWORD))])
-        email = StringField('email',
+        email = StringField(u'Почта:',
                             validators = [Email(u'Неправильно введён Email'),
                                           Optional(),
                                           Length(max=config.MODEL_EMAIL,
                                                  message=u'Email должен быть не более {0} символов'.format(config.MODEL_EMAIL))])
-        role = SelectField('role', validators = [DataRequired()])
+        role = SelectField(u'Роль:', validators = [DataRequired()])
+
         apply_button = SubmitField(u'Сохранить')
         cancel_button = SubmitField(u'Отменить')
 
+        def __init__(self, *args, **kwargs):
+          super(EditUserForm, self).__init__(*args, **kwargs)
+          self.role.choices = User.roles_choices() #[('admin', u'Администратор'),('user', u'Пользователь')]
+          #print self.role.choices
+
+        def get_role(self) :
+          return int(self.role.data)
+
+        def set_role(self, role) :
+          self.role.data = str(role)
+
+        def validate(self):
+          initial_validation = super(EditUserForm, self).validate()
+          if not initial_validation:
+            print "EditUserForm: initial_validation failed"
+            return False
+          if self.password.data and not User.password_is_strong(self.password.data) :
+            print "EditUserForm: weak password"
+            self.password.errors.append(u'Слабый пароль')
+            return False
+          print "EditUserForm: validation Ok"
+          return True
+
 class NewUserForm(EditUserForm):
 
-        userid = StringField('userid', 
+        userid = StringField(u'Идентификатор:', 
                              validators = [DataRequired(u'Не введено имя пользователя'),
                                          Length(max=config.MODEL_USERNAME,
                                                 message=u'Имя пользователя должно быть не более {0} символов'.format(config.MODEL_USERNAME))])
-        first = StringField('first', validators=[DataRequired()])
-        last = StringField('last', validators=[DataRequired()])
+        first = StringField(u'Имя:', validators=[DataRequired()])
+        last = StringField(u'Фамилия:', validators=[DataRequired()])
 
+        def __init__(self, *args, **kwargs):
+          super(NewUserForm, self).__init__(*args, **kwargs)
+          self.password.validators = [ DataRequired(u'Для необходимо задать пароль'),
+                                       Length(max=config.MODEL_PASSWORD, min=8,
+                                              message=u'Пароль должен быть длиной от 8 до {0} символов'.format(config.MODEL_PASSWORD))]
 

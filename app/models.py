@@ -11,7 +11,9 @@ import config
 
 ROLE_ADMIN = 2
 ROLE_USER = 1
-
+roles = { ROLE_ADMIN : u'Администратор',
+          ROLE_USER  : u'Пользователь'
+        }
 
 
 class User(db.Model):
@@ -50,9 +52,10 @@ class User(db.Model):
         return unicode(self.id)
 
     def get_role(self):
-        role = u'неизвестно'
-        if self.role == ROLE_ADMIN : role = u'администратор'
-        if self.role == ROLE_USER : role = u'пользователь'
+        try:
+          role = roles[self.role]
+        except KeyError:
+          role = u'неизвестно'
         return role
 
     def set_password(self, password):
@@ -61,9 +64,26 @@ class User(db.Model):
     def check_password(self, value):
         return bcrypt.check_password_hash(self.password, value)
 
+    @staticmethod
+    def password_is_strong(password) :
+
+
+        print 'Checking password strength:'
+        print password
+        return True
+
     @property
     def full_name(self):
         return u"{0} {1}".format(self.first_name, self.last_name)
+
+    @staticmethod
+    def roles_choices() :
+        choices = [] 
+        for k in roles.keys() :
+          choice = (str(k), roles[k])
+          choices.append(choice)
+        print choices
+        return choices
 
     def __repr__(self):
         r =    u'<User ' + self.username + u' (' + self.first_name + u' ' + self.last_name + u'), email ' + self.email + u', role ' + unicode(self.role) + u'(' + self.get_role() + u') created on ' + unicode (self.ts) + u'>'
