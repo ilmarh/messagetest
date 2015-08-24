@@ -8,3 +8,7 @@ Why: couldn't find easy CMS solution for that type of funcs
 TODO:
 1. Log messages
 2. Fix GET/POST handling
+
+Look at:
+1. https://media.readthedocs.org/pdf/flask-stormpath/latest/flask-stormpath.pdf
+2. https://github.com/sloria/cookiecutter-flask

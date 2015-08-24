@@ -67,10 +67,21 @@ class User(db.Model):
     @staticmethod
     def password_is_strong(password) :
 
-
-        print 'Checking password strength:'
-        print password
-        return True
+        lower = False
+        upper = False
+        number = False
+        other = False
+        for c in password :
+          if c.isalpha() :
+            if c.islower() : lower = True
+            if c.isupper() : upper = True
+          elif c.isdigit() : number = True
+          else : other = True
+        if app.debug :
+          print 'Checking password strength:'
+          print 'lower {0}, upper {1}, number {2}, other {3}'.format(lower, upper, number, other)
+        if (lower+upper+number+other) > 2 : return True
+        return False
 
     @property
     def full_name(self):
@@ -109,7 +120,8 @@ class Message(db.Model):
         self.message = message
         self.contacts = contacts
         if filename :
-          print 'Message recieved filename ' + filename
+          if app.debug :
+            print 'Message recieved filename ' + filename
           '''
           filename is stored in tmp folder
           maybe after antivirus scan
