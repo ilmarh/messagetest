@@ -140,7 +140,7 @@ class Message(db.Model):
           if os.path.isfile(zfilename) :
             
             newfilename = (hashlib.sha256(file(zfilename, 'rb').read()).hexdigest())
-            znewfilename = os.path.join(FILES_DIR, newfilename + '.zip')
+            znewfilename = os.path.join(config.FILES_DIR, newfilename + '.zip')
             if app.debug :
               print 'sha hash: ' + newfilename
               print 'hash len: ' + str(len(newfilename))
