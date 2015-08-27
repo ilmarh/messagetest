@@ -4,7 +4,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager
 from flask.ext.bcrypt import Bcrypt
 from flask.ext.mail import Mail
-from config import basedir, LOGFILE
+from config import basedir, LOGFILE, RECAPTCHA_TESTING
 
 app = Flask(__name__)
 
@@ -21,6 +21,8 @@ db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 
 mail = Mail(app)
+
+app.testing = RECAPTCHA_TESTING
 
 from app import models, views
 

@@ -35,8 +35,8 @@ def login():
 
     if form.validate_on_submit():
       u = form.user
-      if app.debug : print u
-      app.logger.info('User login: {0}\n'.format(u))
+      if app.debug : print u'{0}'.format(u).encode('utf-8')
+      app.logger.info(u'Login: {0}\n'.format(u))
 
       login_user(u)
 
@@ -45,7 +45,7 @@ def login():
       else : return redirect('/messages')
     elif request.method == 'POST' :
       if app.debug :
-        print u'user ' + form.username.data.encode('utf-8') + u' pass ' + form.password.data.encode('utf-8')
+        print u'user {0} pass {1}'.format(form.username.data, form.password.data).encode('utf-8')
         print "login form not validated"
         print form.errors
       for field in form.errors :
@@ -104,7 +104,7 @@ def post_message():
         send_email(subject=u'Новое сообщение горячей линии', recipients=recipients, 
                    body=u'В ' + unicode(m.ts.strftime("%Y-%m-%d %H-%M-%S UTC")) + u' Получено новое сообщение на тему: ' + m.title)
 
-        app.logger.info('Message with ticket {0} commited\n'.format(m.ticket))
+        app.logger.info(u'Message commited: ticket {0}\n'.format(m.ticket))
         return render_template('ticket.html', title = u'Номер', ticket=m.ticket)
 
       elif request.method == 'POST' :
@@ -212,7 +212,7 @@ def download_file(name):
 
     if not g.user.is_anonymous() and not g.user.is_admin():
 
-      logstr = "User " + str(g.user) + " downloading file " + name
+      logstr = u"Download: file {0} by {1}\n".format(name, g.user)
       app.logger.info(logstr)
       zfilename = os.path.join(FILES_DIR, name + '.zip')
       #zfilename = '/files/123456.zip'
@@ -252,7 +252,7 @@ def users():
 	      print user_ids
 	      print recs
 	      flash(u"В запросе POST указаны неверные данные о пользователях")
-	    app.logger.error("Wrong users in POST request")
+	    app.logger.error(u"Error: wrong users {0} in POST request".format(recs))
 	    return redirect('/admin/users')
         if form.add_button.data :
                   if app.debug :
@@ -266,7 +266,7 @@ def users():
           for user_id in user_ids :
             user = User.query.filter_by(username=user_id).first()
             if app.debug : print user
-            app.logger.info('User {0} issued delete command for user {1}\n'.format(g.user, user))
+            app.logger.info(u'User delete: {0} deleted {1}\n'.format(g.user, user))
             db.session.delete(user)
             db.session.commit()
           return redirect('/admin/users')
@@ -285,7 +285,7 @@ def users():
 
       return render_template("admin/users.html", title = u'Управление пользователями', form=form)
                                 
-    app.logger.info('User {0} is not admin, tried to access admin page /admin\n'.format(g.user))
+    app.logger.info(u'Error: user {0} is not admin, tried to access admin page /admin\n'.format(g.user))
     flash('Not admin role' , 'error')
     return redirect('/')
 
@@ -306,16 +306,22 @@ def add_user():
                         Need to check input strings userid, email, first, last names!
                         '''
 			if User.query.filter_by(username=form.userid.data).first():
-                                app.logger.info('User {0} tried to add existing username {1}\n'.format(g.user, form.userid.data))
+                                app.logger.info(u'Error: {0} tried to add existing username {1}\n'.format(g.user, form.userid.data))
 				flash('Username exists!')
 				return redirect('/admin/users/add')
                         if app.debug : print "add user"
 
-			user = User(username=form.userid.data, password=form.password.data, email=form.email.data, role=form.get_role(), first_name=form.first.data, last_name=form.last.data)
+			user = User(username=form.userid.data,
+                                    password=form.password.data,
+                                    email=form.email.data,
+                                    role=form.get_role(),
+                                    first_name=form.first.data,
+                                    last_name=form.last.data)
+			#logstr = unicode(g.user) + u" added user " + unicode(user) + u"\n"
+			logstr = u'User add: {0} added user {1}\n'.format(g.user,user)
+			app.logger.info(logstr)
 			db.session.add(user)
 			db.session.commit()
-			logstr = unicode(g.user) + u" added user " + unicode(user) + u"\n"
-			app.logger.info(logstr)
                 return redirect('/admin/users')
 	elif request.method != "POST":
                 pass
@@ -337,7 +343,7 @@ def add_user():
 
         return render_template("admin/useradd.html", title = u'Новый пользователь', form=form)
 
-    app.logger.info(u'User ' + g.user + u' is not admin, tried to access admin page /admin/users/add\n')
+    app.logger.info(u'Error: user {0} is not admin, tried to access admin page /admin/users/add\n'.format(g.user))
     flash('Not admin role' , 'error')
     return redirect('/')
 
@@ -359,7 +365,7 @@ def edit_user(userid):
 
       if form.validate_on_submit() :
         if form.cancel_button.data :
-          if app.debug : print "cancel user add"
+          if app.debug : print "cancel user edit"
           return redirect('/admin/users')
         if form.apply_button.data :
           if form.password.data:
@@ -368,10 +374,10 @@ def edit_user(userid):
             u.email = form.email.data
 	  if form.role.data : u.role = form.get_role()
 
+          logstr = u'Profile change: {0} changed profile of {1}\n'.format(g.user, u)
+          app.logger.info(logstr)
 	  db.session.add(u)
 	  db.session.commit()
-          print "changed user"
-          # XXX: log message
 
           return redirect('/admin/users')
 
@@ -392,7 +398,7 @@ def edit_user(userid):
 
       return render_template("admin/useredit.html", title = u'Изменение пользователя', form=form)
 
-    app.logger.info(u'User ' + g.user + u' is not admin, tried to access admin page /admin/users/add\n')
+    app.logger.info(u'Error: user {0} is not admin, tried to access admin page /admin/users/edit\n'.format(g.user))
     flash('Not admin role' , 'error')
     return redirect('/')
 
@@ -417,10 +423,12 @@ def edit_profile():
           if form.password1.data : u.set_password(form.password1.data)
           if form.email.data : u.email = form.email.data
 
+          logstr = u'Profile change: {0} changed own profile\n'.format(g.user)
+          app.logger.info(logstr)
+
           db.session.add(form.user)
           db.session.commit()
           print "changed profile"
-          # XXX: log message
           return redirect('/messages')
 
       elif request.method != "POST":

@@ -4,7 +4,7 @@ from flask.ext.wtf import Form#, RecaptureField
 from flask_wtf.recaptcha import RecaptchaField
 from wtforms import StringField, PasswordField, TextAreaField, SubmitField, SelectField
 from flask.ext.wtf.file import FileField, FileAllowed, FileRequired
-from wtforms.validators import DataRequired, Optional, Email, Length, EqualTo
+from wtforms.validators import DataRequired, Optional, Email, Length, EqualTo, Regexp
 
 from .models import User
 import config
@@ -61,6 +61,8 @@ class MessageForm(Form):
                                              message=u'Email должен быть не более {0} символов'.format(config.MODEL_EMAIL))]) #inputtext (email, telephone, etc)
     telephone = StringField(u'Телефон:',
                             validators = [Optional(),
+                                          Regexp('(\d{0,3})\(\d{3,5}\)\d{5,7}(?:#\d{2,4}|)',flags=0,
+                                                 message=u'Телефонный номер должен быть представлен в указанном формате'),
                                           Length(max=config.MODEL_TELEPHONE,
                                                  message=u'Телефонный номер должен быть не более {0} символов'.format(config.MODEL_TELEPHONE))]) #inputtext (email, telephone, etc)
     archive = FileField(u'Файл:', validators=[Optional(), FileAllowed(['zip'], u'Файл должен быть zip-архивом!')])
@@ -81,33 +83,15 @@ class MessageForm(Form):
           if not self.email.data and not self.telephone.data :
             self.email.errors.append(u'Должны быть указаны контактные данные (хотя бы email)')
             self.telephone.errors.append(u'Должны быть указаны контактные данные (хотя бы телефон)')
-            print u'Email ' + self.email.data.encode('utf-8') + u' and Telefone ' + self.telephone.data.encode('utf-8') + u' not set'
+            #print u'Email ' + self.email.data.encode('utf-8') + u' and Telefone ' + self.telephone.data.encode('utf-8') + u' not set'
             return False
           elif self.email.data and self.telephone.data :
-            try :
-              tel = int(self.telephone.data)
-            except ValueError: 
-              print u'Telephone error ' + self.telephone.data.encode('utf-8')
-              self.telephone.errors.append(u'Телефонный номер должен состоять из цифр')
-              return False
-            if tel < 0 :
-              self.telephone.errors.append(u'Телефонный номер должен состоять из цифр')
-              return False
             self.contacts = self.email.data + u', ' +  self.telephone.data
-            print self.contacts.encode('utf-8')
+            #print self.contacts.encode('utf-8')
           elif self.email.data and not self.telephone.data :
             self.contacts = self.email.data
-            print self.contacts.encode('utf-8')
+            #print self.contacts.encode('utf-8')
           else :
-            try :
-              tel = int(self.telephone.data)
-            except ValueError: 
-              print u'Telephone error ' + self.telephone.data.encode('utf-8')
-              self.telephone.errors.append(u'Телефонный номер должен состоять из цифр')
-              return False
-            if tel < 0 :
-              self.telephone.errors.append(u'Телефонный номер должен состоять из цифр')
-              return False
             self.contacts = self.telephone.data
         return True # Any data is ok
 

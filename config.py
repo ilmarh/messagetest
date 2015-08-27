@@ -52,3 +52,5 @@ RECAPTCHA_PUBLIC_KEY = '6LeYIbsSAAAAACRPIllxA7wvXjIE411PfdB2gt2J'
 RECAPTCHA_PRIVATE_KEY = '6LeYIbsSAAAAAJezaIq3Ft_hSTo0YtyeFG-JgRtu'
 RECAPTCHA_PARAMETERS = {'hl': 'zh', 'render': 'explicit'}
 RECAPTCHA_DATA_ATTRS = {'theme': 'dark'}
+RECAPTCHA_TESTING = True # False in production
+

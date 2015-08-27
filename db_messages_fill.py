@@ -41,12 +41,3 @@ db.session.add(m)
 db.session.commit()
 
 
-for i in range(1,50) :
-  title = u'заголовок ' + unicode(i)
-  msg = unicode(i) + u' - Тело сообщения и различне нитшеанские рассуждения о жизни, быте, политике, культуре и куче разных ничего не значащих на самом деле слов, потому что ... многозначительная пауза'
-  contacts = u'email@email.com, 1234567890'
-  m = models.Message(title=title, message=msg, contacts=contacts)
-  db.session.add(m)
-  db.session.commit()
-
-

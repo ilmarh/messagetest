@@ -52,19 +52,19 @@
 
 <!-- end menu description -->
 
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
 <div class="container">
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
     {% for message in messages %}
         <div class="alert alert-warning">
                 <button type="button" class="close" data-dismiss="alert">&times;</button>
                {{ message }}
         </div>
     {% endfor %}
-    {% endif %}
-    {% endwith %}
-
 </div> <!-- container -->
+  {% endif %}
+{% endwith %}
+
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
 

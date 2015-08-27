@@ -9,10 +9,13 @@ import zlib, hashlib
 import config
 
 
-ROLE_ADMIN = 2
 ROLE_USER = 1
-roles = { ROLE_ADMIN : u'Администратор',
-          ROLE_USER  : u'Пользователь'
+ROLE_ADMIN = 2
+ROLE_DELETE = 3
+
+roles = { ROLE_ADMIN  : u'Управление пользователями',
+          ROLE_USER   : u'Читать сообщения',
+          ROLE_DELETE : u'Читать и удалять сообщения'
         }
 
 
@@ -97,9 +100,13 @@ class User(db.Model):
         return choices
 
     def __repr__(self):
+        '''
         r =    u'<User ' + self.username + u' (' + self.first_name + u' ' + self.last_name + u'), email ' + self.email + u', role ' + unicode(self.role) + u'(' + self.get_role() + u') created on ' + unicode (self.ts) + u'>'
         return r.encode('utf-8')
 #.format(self.username, self.first_name.decode('utf-8'), self.last_name.decode('utf-8'), self.email, self.role, self.get_role().decode('utf-8'), self.ts)
+        '''
+        r = u'<User {0} ({1} {2}), email {3}, role {4}({5}) created on {6}>'.format(self.username, self.first_name, self.last_name, self.email, self.role, self.get_role(), self.ts)
+        return r
 
 
 class Message(db.Model):
